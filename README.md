@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # cardball
 
 This is the game microservice. It is used in conjunction with project whizcards, that provides the player data for the game.
