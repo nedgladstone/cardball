@@ -1,137 +1,169 @@
 package com.github.nedgladstone.cardball.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.*;
+import net.bytebuddy.pool.TypePool;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Game {
+    public enum Role {
+        OFFENSE,
+        DEFENSE;
+
+        public static Role fromString(String value) {
+            return Role.valueOf(value.toUpperCase());
+        }
+    }
+
+    public enum Side {
+        VISITOR,
+        HOME;
+
+        public static Side fromString(String value) {
+            return Side.valueOf(value.toUpperCase());
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
 
-    @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "fk_visiting_team", nullable = false)
-    private Team visitingTeam;
+    private Team visitingTeam = null;
 
-    @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "fk_home_team", nullable = false)
-    private Team homeTeam;
-
-    @Column(name = "score_visitors")
-    private int scoreVisitors;
-
-    @Column(name = "score_home")
-    private int scoreHome;
-
-    @Column(name = "inning")
-    private int inning;
-
-    @Column(name = "half")
-    private int half;
-
-    @Column(name = "batter")
-    private int batter;
+    private Team homeTeam = null;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
-    private List<Action> actions;
+    private List<Participant> visitingLineup = new ArrayList<>();
 
-    public Game() {
-    }
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Participant> homeLineup = new ArrayList<>();
 
-    public Game(@NotNull Team visitingTeam, @NotNull Team homeTeam, int scoreVisitors, int scoreHome, int inning, int half, int batter, List<Action> actions) {
+    private GameStatus status = new GameStatus();
+
+    private String offensiveStrategy = null;
+    private String defensiveStrategy = null;
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Action> actions = new ArrayList<>();
+
+    public Game(Team visitingTeam, Team homeTeam) {
         this.visitingTeam = visitingTeam;
         this.homeTeam = homeTeam;
-        this.scoreVisitors = scoreVisitors;
-        this.scoreHome = scoreHome;
-        this.inning = inning;
-        this.half = half;
-        this.batter = batter;
-        this.actions = (actions != null) ? actions : new ArrayList<>();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Team getVisitingTeam() {
-        return visitingTeam;
-    }
-
-    public void setVisitingTeam(Team visitingTeam) {
-        this.visitingTeam = visitingTeam;
-    }
-
-    public Team getHomeTeam() {
-        return homeTeam;
-    }
-
-    public void setHomeTeam(Team homeTeam) {
-        this.homeTeam = homeTeam;
-    }
-
-    public int getScoreVisitors() {
-        return scoreVisitors;
-    }
-
-    public void setScoreVisitors(int scoreVisitors) {
-        this.scoreVisitors = scoreVisitors;
-    }
-
-    public int getScoreHome() {
-        return scoreHome;
-    }
-
-    public void setScoreHome(int scoreHome) {
-        this.scoreHome = scoreHome;
-    }
-
-    public int getInning() {
-        return inning;
-    }
-
-    public void setInning(int inning) {
-        this.inning = inning;
-    }
-
-    public int getHalf() {
-        return half;
-    }
-
-    public void setHalf(int half) {
-        this.half = half;
-    }
-
-    public int getBatter() {
-        return batter;
-    }
-
-    public void setBatter(int batter) {
-        this.batter = batter;
-    }
-
-    public List<Action> getActions() {
-        return actions;
-    }
-
-    public void setAction(List<Action> actions) {
-        this.actions = actions;
+        this.status.setState(GameStatus.State.ACCEPTING_LINEUPS);
     }
 
     public Game addAction(Action action) {
         actions.add(action);
         action.setGame(this);
         return this;
+    }
+
+    public void putLineup(Side side, List<Participant> lineup) {
+        validateLineup(lineup);
+        if (status.getState() == GameStatus.State.ACCEPTING_LINEUPS) {
+            // Don't treat this as a substitution, because the game has not begun
+            if (side == Side.VISITOR) {
+                visitingLineup = lineup;
+            } else if (side == Side.HOME) {
+                homeLineup = lineup;
+            } else {
+                throw new IllegalArgumentException("Invalid lineup side");
+            }
+
+            if ((visitingLineup != null) && (homeLineup != null)) {
+                changeStateToAcceptingStrategies();
+            }
+            return;
+        }
+        if (status.getState() != GameStatus.State.ACCEPTING_STRATEGIES) {
+            throw new IllegalStateException("Not accepting lineups");
+        }
+
+        // This lineup was submitted during the game - treat it as a list of substitutions
+        handleSubstitutions(side, lineup);
+    }
+
+    public void postStrategy(Role role, String strategy) {
+        if (status.getState() != GameStatus.State.ACCEPTING_STRATEGIES) {
+            throw new IllegalStateException("Not accepting strategies");
+        }
+        if (strategy == null) {
+            strategy = "";
+        }
+
+        if (role == Role.OFFENSE) {
+            validateOffensiveStrategy(strategy);
+            offensiveStrategy = strategy;
+        } else if (role == Role.DEFENSE) {
+            validateDefensiveStrategy(strategy);
+            defensiveStrategy = strategy;
+        } else {
+            throw new IllegalArgumentException("Invalid strategy role");
+        }
+
+        if ((offensiveStrategy != null) && (defensiveStrategy != null)) {
+            changeStateToPlaying();
+        }
+    }
+
+    private void handleSubstitutions(Side side, List<Participant> lineup) {
+        // TODO NG20210206 Implement
+        // Loop through participants in new lineup
+        //     If participant is not at same batting order slot in current lineup
+        //         If participant is elsewhere in current lineup
+        //             Error - not allowed to move batting order slots
+        //         If participant has previously been in this game
+        //             Error - not allowed to reenter game once subbed out
+        //         Offensive substitution - sub out current participant by setting positions negative
+        //     If participant is not at same defensive position in current lineup
+        //         Defensive position change - nop?
+    }
+
+    private void validateLineup(List<Participant> lineup) {
+        // TODO NG20210206 Implement
+        // Ensure exactly one of each fielding position provided
+        // Ensure exactly one of each batting order slot provided
+        // Ensure no participants are null
+    }
+
+    private void validateOffensiveStrategy(String strategy) {
+        // TODO NG20210206 Implement
+        // Ensure all strategy specifiers are well-formed for offense
+    }
+
+    private void validateDefensiveStrategy(String strategy) {
+        // TODO NG20210206 Implement
+        // Ensure all strategy specifiers are well-formed for offense
+    }
+
+    private void changeStateToAcceptingStrategies() {
+        status.setState(GameStatus.State.BUSY);
+        // Clear strategies
+        offensiveStrategy = null;
+        defensiveStrategy = null;
+        status.setState(GameStatus.State.ACCEPTING_STRATEGIES);
+    }
+
+    private void changeStateToPlaying() {
+        status.setState(GameStatus.State.BUSY);
+        play();
+        status.setState(GameStatus.State.PLAYING);
+    }
+
+    private void play() {
+        // Evaluate offensive strategy
     }
 }

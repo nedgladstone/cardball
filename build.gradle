@@ -21,6 +21,8 @@ micronaut {
 }
 
 dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor "org.projectlombok:lombok"
     annotationProcessor("io.micronaut.data:micronaut-data-processor")
     annotationProcessor("io.micronaut:micronaut-inject-java")
     implementation("io.micronaut:micronaut-validation")

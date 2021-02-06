@@ -1,0 +1,154 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Open Sans", "sans-serif";
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background-color: #ebeff5;
+}
+
+body.waiting * {
+  cursor: progress;
+}
+
+.btn-header {
+  background: none;
+  border: none;
+  display: inline-block;
+  width: 50px;
+}
+
+.treeable::before {
+  background: url("../img/CoorsField.jpg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  opacity: 0.4;
+}
+
+h1 {
+  padding: 10px 5px 5px 50px;
+  color: black;
+}
+
+.search-text {
+  font-size: 16pt;
+  padding: 10px 20px;
+  border-radius: 15px;
+}
+
+.search-text:focus {
+  outline-width: 0;
+}
+
+#btn-search-by-id {
+  font-size: 24pt;
+  width: 50px;
+  transform:translate(0%, +5%);
+  background: none;
+  border: none;
+}
+
+.search-results-div {
+  position: relative;
+  top: 47%;
+  height: 50%;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1px 5px;
+}
+
+.search-results-table {
+  background-color: #ebeff5;
+  border-collapse: collapse;
+  text-align: left;
+  vertical-align: top;
+  padding: 20px;
+  border-spacing: 20px;
+  border: 5px solid #ebeff5;
+  margin: 10px;
+  font-family: "Open Sans", "sans-serif";
+  font-size: 12pt;
+}
+
+.search-results-table th,
+.search-results-table td {
+  border-bottom: 5px solid #ebeff5;
+  border-top: 5px solid #ebeff5;
+  padding: 10px;
+}
+
+.search-results-table th {
+  font-weight: bold;
+  font-family: "Open Sans", "sans-serif";
+  font-size: 10pt;
+}
+
+.search-results-scroll {
+  position: absolute;
+  height: 100%;
+  overflow-x: auto;
+}
+
+.search-results-table-row {
+  background-color: white;
+  color: black;
+}
+
+.search-results-button-div {
+  position: absolute;
+  top: 90%;
+  left: 45%;
+}
+
+.btn-in-search-row {
+  border: none;
+  padding: 2px;
+  text-align: center;
+  cursor: pointer;
+  color: black;
+  font-size: 16pt;
+}
+
+.btn-search-arrow {
+  border: none;
+  padding: 2px;
+  text-align: center;
+  cursor: pointer;
+  color: black;
+  font-size: 64pt;
+  background: none;
+}
+
+.search-button-div {
+  position: absolute;
+  top: 70%;
+}
+
+.search-back-button-div {
+  left: 5%;
+}
+
+.search-fwd-button-div {
+  left: 93%;
+}
+
+.formattedID {
+  color: #5691f0;
+}
