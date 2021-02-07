@@ -6,7 +6,7 @@ micronaut:
 ---
 datasources:
   default:
-    url: jdbc:postgresql://localhost:5432/cardball
+    url: jdbc:postgresql://localhost:5432/cardball2
     driverClassName: org.postgresql.Driver
     username: postgres
     password: secret

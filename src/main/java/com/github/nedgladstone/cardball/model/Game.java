@@ -2,7 +2,8 @@ package com.github.nedgladstone.cardball.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
-import net.bytebuddy.pool.TypePool;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -34,32 +35,41 @@ public class Game {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "name")
+    private String name;
+
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "fk_visiting_team", nullable = false)
+    @JoinColumn(name = "fk_visiting_team")
     private Team visitingTeam = null;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "fk_home_team", nullable = false)
+    @JoinColumn(name = "fk_home_team")
     private Team homeTeam = null;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     @JsonManagedReference
     private List<Participant> visitingLineup = new ArrayList<>();
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     @JsonManagedReference
     private List<Participant> homeLineup = new ArrayList<>();
 
+    @Embedded
     private GameStatus status = new GameStatus();
 
     private String offensiveStrategy = null;
     private String defensiveStrategy = null;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     @JsonManagedReference
     private List<Action> actions = new ArrayList<>();
 
-    public Game(Team visitingTeam, Team homeTeam) {
+
+    public Game(String name, Team visitingTeam, Team homeTeam) {
+        this.name = name;
         this.visitingTeam = visitingTeam;
         this.homeTeam = homeTeam;
         this.status.setState(GameStatus.State.ACCEPTING_LINEUPS);
@@ -166,4 +176,5 @@ public class Game {
     private void play() {
         // Evaluate offensive strategy
     }
+
 }

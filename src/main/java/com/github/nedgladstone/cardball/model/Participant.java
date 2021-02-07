@@ -36,7 +36,8 @@ public class Participant {
     private int fieldingPosition;
 
     @JsonIdentityReference(alwaysAsId = true)
-    @Column(name = "fk_player")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_player")
     private Player player;
 
     public Participant(Game game, int battingOrderSlot, int fieldingPosition, Player player) {

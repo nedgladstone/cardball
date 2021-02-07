@@ -7,12 +7,25 @@ import java.util.List;
 
 import lombok.*;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
+@Embeddable
 public class SideStatus {
-    private Score score = new Score();
+    private int runs = 0;
+
+    private int hits = 0;
+
+    private int errors = 0;
+
+    // The following fields are set to the slot number in the batting order
+    // Or 0 if unoccupied
     private int batter = 0;
 
-    // index 0 is batter; 1-3 are runners on corresponding bases
-    @JsonIdentityReference(alwaysAsId = true)
-    private List<Player> bases = new ArrayList<>();
+    private int onFirst = 0;
+
+    private int onSecond = 0;
+
+    private int onThird = 0;
 }

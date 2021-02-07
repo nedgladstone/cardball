@@ -16,7 +16,7 @@ public class Team {
     @Column(name = "id")
     private Long id;
 
-    @JsonIdentityReference(alwaysAsId = true)
+    @Embedded
     private TeamDefinition definition;
 
     @Column(name = "wins_this_season")

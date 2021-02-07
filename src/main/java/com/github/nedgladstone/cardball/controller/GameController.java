@@ -8,6 +8,7 @@ import io.micronaut.scheduling.annotation.ExecuteOn;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,21 +28,33 @@ public class GameController {
     }
 
     @Get
-    public Iterable<GameStatus> list() {
-        return StreamSupport.stream(gameRepository.findAll().spliterator(), false).map(Game::getStatus).collect(Collectors.toList());
+    public Iterable<Game> list() {
+        return gameRepository.findAll();
     }
 
     @Get("/{id}")
-    public GameStatus find(long id) {
-        return findGame(id).getStatus();
+    public Game find(long id) {
+        return findGame(id);
     }
 
     @Post
-    public void createGame(GameDefinition definition) {
+    public Game create(GameDefinition definition) {
         Team visitingTeam = findTeam(definition.getVisitingTeamId());
         Team homeTeam = findTeam(definition.getHomeTeamId());
-        Game game = new Game(visitingTeam, homeTeam);
+        Game game = new Game(definition.getName(), visitingTeam, homeTeam);
         gameRepository.save(game);
+        return game;
+    }
+
+    @Get("/{id}/status")
+    public GameStatus findStatus(long id) {
+        return findGame(id).getStatus();
+    }
+
+    @Get("/{gameId}/lineup")
+    public LineupsResponse listLineups(long gameId) {
+        Game game = findGame(gameId);
+        return new LineupsResponse(game.getVisitingLineup(), game.getHomeLineup());
     }
 
     @Put("/{gameId}/lineup/{side}")
@@ -60,26 +73,26 @@ public class GameController {
     }
 
     @Post("/{gameId}/strategy/{role}")
-    public GameStatus postStrategy(long gameId, String role, String type, @Body String strategy) {
+    public GameStatus postStrategy(long gameId, String role, String strategy) {
         Game game = findGame(gameId);
         game.postStrategy(Game.Role.fromString(role), strategy);
         gameRepository.save(game);
         return game.getStatus();
     }
 
-    @Get("/sneaky")
-    public String sneaky() {
+    @Get("/create-dummy")
+    public Game createDummyGame() {
         Team rockies = new Team(new TeamDefinition("Colorado", "Rockies", "Ned", "Gladstone"))
-                .addPlayer(new Player("Todd", "Helton", 2003, 3, null, 'R', 'R', 308, 999))
-                .addPlayer(new Player("Larry", "Walker", 1998, 9, null, 'L', 'L', 297, 999));
+                .addPlayer(new Player("Todd", "Helton", 2003, 3, 'R', 'R', 308, 999))
+                .addPlayer(new Player("Larry", "Walker", 1998, 9, 'L', 'L', 297, 999));
         Team phillies = new Team(new TeamDefinition("Philadelphia", "Phillies", "Ed", "Gladstone"))
-                .addPlayer(new Player("Greg", "Luzinski", 1978, 7, null, 'R', 'R', 276, 999))
-                .addPlayer(new Player("Larry", "Bowa", 1980, 6, null, 'R', 'R', 266, 999));
-        Game game7 = new Game(phillies, rockies)
+                .addPlayer(new Player("Greg", "Luzinski", 1978, 7, 'R', 'R', 276, 999))
+                .addPlayer(new Player("Larry", "Bowa", 1980, 6, 'R', 'R', 266, 999));
+        Game game = new Game("Sneaky little game", phillies, rockies)
                 .addAction(new Action(null, null, null, 1, 0, 0, phillies.getPlayers().get(0), new Timestamp(System.currentTimeMillis()), 0, 0, "KL", "", 0, false, true)
                         .addResult(new Action(null, null, null, 0, 0, 0, phillies.getPlayers().get(1), new Timestamp(System.currentTimeMillis()), 1, 2, "PB", "", 2, false, false)));
-        gameRepository.save(game7);
-        return "Go Rox!";
+        gameRepository.save(game);
+        return game;
     }
 
     private Game findGame(long id) {
