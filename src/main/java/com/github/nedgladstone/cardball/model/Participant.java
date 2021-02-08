@@ -1,7 +1,9 @@
 package com.github.nedgladstone.cardball.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Participant {
     @Id
@@ -18,9 +21,9 @@ public class Participant {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_game")
-    @JsonBackReference
+    @JsonBackReference(value = "participant-in-game")
     private Game game;
 
     // -1 - -9 = batting order slot before being substituted out
@@ -35,13 +38,13 @@ public class Participant {
     @Column(name = "fielding_position")
     private int fieldingPosition;
 
-    @JsonIdentityReference(alwaysAsId = true)
-    @OneToOne(cascade = CascadeType.ALL)
+    //@JsonIdentityReference(alwaysAsId = true)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "fk_player")
     private Player player;
 
     public Participant(Game game, int battingOrderSlot, int fieldingPosition, Player player) {
-        this.game = game;
+        //this.game = game;
         this.battingOrderSlot = battingOrderSlot;
         this.fieldingPosition = fieldingPosition;
         this.player = player;

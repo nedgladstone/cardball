@@ -5,8 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@NoArgsConstructor @AllArgsConstructor @Getter @Setter
 @Embeddable
+@NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class GameStatus {
     public enum State {
         ACCEPTING_LINEUPS,

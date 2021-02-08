@@ -1,11 +1,14 @@
 package com.github.nedgladstone.cardball.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Player {
     @Id
@@ -39,9 +42,9 @@ public class Player {
     @Column(name = "era")
     private int era;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_team")
-    @JsonBackReference
+    //@JsonBackReference(value = "player-in-team")
     private Team team;
 
     public Player(String firstName, String lastName, int year, int position, char battingHand, char throwingHand, int battingAverage, int era) {

@@ -1,6 +1,9 @@
 package com.github.nedgladstone.cardball.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -10,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Game {
     public enum Role {
@@ -38,22 +42,28 @@ public class Game {
     @Column(name = "name")
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "fk_visiting_team")
+    //experiment
+    // @JsonManagedReference(value = "team-in-game")
+    //@JsonIgnoreProperties("game")
     private Team visitingTeam = null;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "fk_home_team")
+    // experiment
+    // @JsonManagedReference(value = "team-in-game")
+    //@JsonIgnoreProperties("game")
     private Team homeTeam = null;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JsonManagedReference
+    @JsonManagedReference(value = "participant-in-team")
     private List<Participant> visitingLineup = new ArrayList<>();
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JsonManagedReference
+    @JsonManagedReference(value = "participant-in-team")
     private List<Participant> homeLineup = new ArrayList<>();
 
     @Embedded
@@ -62,9 +72,9 @@ public class Game {
     private String offensiveStrategy = null;
     private String defensiveStrategy = null;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JsonManagedReference
+    //@JsonManagedReference(value = "action-in-game")
     private List<Action> actions = new ArrayList<>();
 
 

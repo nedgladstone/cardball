@@ -1,7 +1,9 @@
 package com.github.nedgladstone.cardball.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,24 +12,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 public class Action {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinColumn(name = "cause")
-    @JsonBackReference
+    //@JsonBackReference(value = "results-in-cause")
     private Action cause;
 
-    @OneToMany(mappedBy = "cause", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "cause", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    //@JsonManagedReference(value = "results-in-cause")
     private List<Action> results;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinColumn(name = "fk_game")
-    @JsonBackReference
+    //@JsonBackReference(value = "action-in-game")
     private Game game;
 
     @Column(name = "inning")
@@ -39,7 +42,7 @@ public class Action {
     @Column(name = "batter")
     private int batter;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "fk_player")
     private Player player;
 

@@ -1,7 +1,6 @@
 package com.github.nedgladstone.cardball.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import javax.persistence.*;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Team {
     @Id
@@ -25,9 +25,18 @@ public class Team {
     @Column(name = "losses_this_season")
     private int lossesThisSeason = 0;
 
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "team", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    //@JsonManagedReference(value = "player-in-team")
     private List<Player> players = new ArrayList<>();
+
+    // experiment
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinColumn(name = "fk_game")
+    // experiment
+    //@JsonBackReference(value = "team-in-game")
+    //@JsonManagedReference(value = "team-in-game")
+    //@JsonIgnoreProperties({"visitingTeam", "homeTeam"})
+    private Game game;
 
     public Team(TeamDefinition definition) {
         this.definition = definition;

@@ -37,13 +37,14 @@ public class GameController {
         return findGame(id);
     }
 
+    // TODO NG20210207 This should return Game, but that is causing deser errors at client
     @Post
     public Game create(GameDefinition definition) {
         Team visitingTeam = findTeam(definition.getVisitingTeamId());
         Team homeTeam = findTeam(definition.getHomeTeamId());
         Game game = new Game(definition.getName(), visitingTeam, homeTeam);
         gameRepository.save(game);
-        return game;
+        return game; //.getId().toString();
     }
 
     @Get("/{id}/status")
@@ -68,7 +69,7 @@ public class GameController {
                         playerController.find(pd.getPlayerId())))
                 .collect(Collectors.toList());
         game.putLineup(Game.Side.fromString(side), lineup);
-        gameRepository.save(game);
+        gameRepository.update(game);
         return game.getStatus();
     }
 
@@ -76,8 +77,18 @@ public class GameController {
     public GameStatus postStrategy(long gameId, String role, String strategy) {
         Game game = findGame(gameId);
         game.postStrategy(Game.Role.fromString(role), strategy);
-        gameRepository.save(game);
+        gameRepository.update(game);
         return game.getStatus();
+    }
+
+    @Get("/debug")
+    public GameTEST debug() {
+        TeamTEST t1 = new TeamTEST(12345L, 98, null);
+        // TeamTEST t2 = new TeamTEST(12346L, 13, null);
+        GameTEST g = new GameTEST(44121L, "gee", t1); //, t2);
+        t1.setGame(g);
+        //t2.setGame(g);
+        return g;
     }
 
     @Get("/create-dummy")

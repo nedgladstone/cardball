@@ -1,6 +1,5 @@
 package com.github.nedgladstone.cardball.controller;
 
-import com.github.nedgladstone.cardball.model.Game;
 import com.github.nedgladstone.cardball.model.Player;
 import com.github.nedgladstone.cardball.model.Team;
 import com.github.nedgladstone.cardball.model.TeamDefinition;
@@ -43,7 +42,7 @@ public class TeamController {
     public Team addPlayer(long teamId, Player player) {
         Team team = findTeam(teamId);
         team.addPlayer(player);
-        teamRepository.save(team);
+        teamRepository.update(team);
         return team;
     }
 
