@@ -19,6 +19,12 @@ public class SideStatus {
 
     private int errors = 0;
 
+    private int outs = 0;
+
+    private int balls = 0;
+
+    private int strikes = 0;
+
     // The following fields are set to the slot number in the batting order
     // Or 0 if unoccupied
     private int batter = 0;

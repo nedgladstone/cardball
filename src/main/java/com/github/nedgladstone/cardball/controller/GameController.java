@@ -5,18 +5,19 @@ import com.github.nedgladstone.cardball.repository.GameRepository;
 import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/game")
 public class GameController {
+    private static final Logger logger = LoggerFactory.getLogger("com.github.nedgladstone.cardball");
+
     protected final TeamController teamController;
     protected final PlayerController playerController;
     protected final GameRepository gameRepository;
@@ -37,7 +38,6 @@ public class GameController {
         return findGame(id);
     }
 
-    // TODO NG20210207 This should return Game, but that is causing deser errors at client
     @Post
     public Game create(GameDefinition definition) {
         Team visitingTeam = findTeam(definition.getVisitingTeamId());
@@ -94,17 +94,24 @@ public class GameController {
     @Get("/create-dummy")
     public Game createDummyGame() {
         Team rockies = new Team(new TeamDefinition("Colorado", "Rockies", "Ned", "Gladstone"))
-                .addPlayer(new Player("Todd", "Helton", 2003, 3, 'R', 'R', 308, 999))
-                .addPlayer(new Player("Larry", "Walker", 1998, 9, 'L', 'L', 297, 999));
+                .addPlayer(new Player("Todd", "Helton", 2003, 3, 'R', 'R', 308, 999, 9999))
+                .addPlayer(new Player("Larry", "Walker", 1998, 9, 'L', 'L', 297, 999, 9999));
         Team phillies = new Team(new TeamDefinition("Philadelphia", "Phillies", "Ed", "Gladstone"))
-                .addPlayer(new Player("Greg", "Luzinski", 1978, 7, 'R', 'R', 276, 999))
-                .addPlayer(new Player("Larry", "Bowa", 1980, 6, 'R', 'R', 266, 999));
+                .addPlayer(new Player("Greg", "Luzinski", 1978, 7, 'R', 'R', 276, 999, 9999))
+                .addPlayer(new Player("Larry", "Bowa", 1980, 6, 'R', 'R', 266, 999, 9999));
         Game game = new Game("Sneaky little game", phillies, rockies)
                 .addAction(new Action(null, null, null, 1, 0, 0, phillies.getPlayers().get(0), new Timestamp(System.currentTimeMillis()), 0, 0, "KL", "", 0, false, true)
                         .addResult(new Action(null, null, null, 0, 0, 0, phillies.getPlayers().get(1), new Timestamp(System.currentTimeMillis()), 1, 2, "PB", "", 2, false, false)));
         gameRepository.save(game);
         return game;
     }
+
+    @Get("/ping")
+    public String test(@QueryValue String testParam) {
+        logger.info("In ping");
+        return "Pong " + testParam;
+    }
+
 
     private Game findGame(long id) {
         Optional<Game> gameOptional = gameRepository.findById(id);

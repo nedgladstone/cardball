@@ -58,12 +58,12 @@ public class Game {
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JsonManagedReference(value = "participant-in-team")
+    // @JsonManagedReference(value = "participant-in-team") // NGNOTE: Things were working between client and here before I took out value. I did that to troubleshoot a deser problem creating player with stats lookup
     private List<Participant> visitingLineup = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.MERGE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JsonManagedReference(value = "participant-in-team")
+    // @JsonManagedReference(value = "participant-in-team") // NGNOTE: See above
     private List<Participant> homeLineup = new ArrayList<>();
 
     @Embedded

@@ -39,6 +39,9 @@ public class Player {
     @Column(name = "batting_average")
     private int battingAverage;
 
+    @Column(name = "pitching_average")
+    private int pitchingAverage;
+
     @Column(name = "era")
     private int era;
 
@@ -47,7 +50,7 @@ public class Player {
     //@JsonBackReference(value = "player-in-team")
     private Team team;
 
-    public Player(String firstName, String lastName, int year, int position, char battingHand, char throwingHand, int battingAverage, int era) {
+    public Player(String firstName, String lastName, int year, int position, char battingHand, char throwingHand, int pitchingAverage, int battingAverage, int era) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.year = year;
@@ -55,6 +58,7 @@ public class Player {
         this.battingHand = battingHand;
         this.throwingHand = throwingHand;
         this.battingAverage = battingAverage;
+        this.pitchingAverage = pitchingAverage;
         this.era = era;
         this.team = null;
     }
