@@ -44,9 +44,22 @@ public class Participant {
     private Player player;
 
     public Participant(Game game, int battingOrderSlot, int fieldingPosition, Player player) {
-        //this.game = game;
+        this.game = game;
         this.battingOrderSlot = battingOrderSlot;
         this.fieldingPosition = fieldingPosition;
         this.player = player;
     }
+/*
+    @Override
+    public String toString() {
+        return "Participant{" +
+                "id=" + id +
+                ", game=" + gameId +
+                ", battingOrderSlot=" + battingOrderSlot +
+                ", fieldingPosition=" + fieldingPosition +
+                ", player=" + player +
+                '}';
+    }
+
+ */
 }

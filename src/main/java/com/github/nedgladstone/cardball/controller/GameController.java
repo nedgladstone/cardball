@@ -20,11 +20,13 @@ public class GameController {
 
     protected final TeamController teamController;
     protected final PlayerController playerController;
+    protected final ParticipantController participantController;
     protected final GameRepository gameRepository;
 
-    public GameController(TeamController teamController, PlayerController playerController, GameRepository gameRepository) {
+    public GameController(TeamController teamController, PlayerController playerController, ParticipantController participantController, GameRepository gameRepository) {
         this.teamController = teamController;
         this.playerController = playerController;
+        this.participantController = participantController;
         this.gameRepository = gameRepository;
     }
 
@@ -59,18 +61,17 @@ public class GameController {
     }
 
     @Put("/{gameId}/lineup/{side}")
-    public GameStatus putLineup(long gameId, String side, LineupDefinition lineupDefinition) {
+    public Game putLineup(long gameId, String side, LineupDefinition lineupDefinition) {
         Game game = findGame(gameId);
+        Game.Side sideE = Game.Side.fromString(side);
         List<Participant> lineup = lineupDefinition.getParticipants().stream()
-                .map(pd -> new Participant(
-                        game,
-                        pd.getNumberInBattingOrder(),
-                        pd.getFieldingPosition(),
-                        playerController.find(pd.getPlayerId())))
+                .map(p -> participantController.create(game, p))
                 .collect(Collectors.toList());
-        game.putLineup(Game.Side.fromString(side), lineup);
+        logger.info("Putting lineup into game: " + game.getId() + " side: " + sideE.name() + " lineup def: " + lineupDefinition.getParticipants() + " lineup: " + lineup);
+        game.putLineup(sideE, lineup);
+        logger.info("After put, visitors: " + game.getVisitingLineup() + " home: " + game.getHomeLineup());
         gameRepository.update(game);
-        return game.getStatus();
+        return game;
     }
 
     @Post("/{gameId}/strategy/{role}")

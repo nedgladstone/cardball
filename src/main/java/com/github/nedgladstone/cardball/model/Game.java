@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import java.util.List;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Game.class)
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter
 public class Game {
+    private static final Logger logger = LoggerFactory.getLogger("com.github.nedgladstone.cardball");
+
     public enum Role {
         OFFENSE,
         DEFENSE;
@@ -45,7 +49,7 @@ public class Game {
     @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "fk_visiting_team")
     //experiment
-    // @JsonManagedReference(value = "team-in-game")
+    // @JsonManagedReference(value = "team-in-game") // NG: just uncommented
     //@JsonIgnoreProperties("game")
     private Team visitingTeam = null;
 
@@ -92,23 +96,28 @@ public class Game {
     }
 
     public void putLineup(Side side, List<Participant> lineup) {
+        logger.info("Game putting lineup for side " + side + ": " + lineup);
         validateLineup(lineup);
         if (status.getState() == GameStatus.State.ACCEPTING_LINEUPS) {
             // Don't treat this as a substitution, because the game has not begun
             if (side == Side.VISITOR) {
+                logger.info("Lineup added as visitors");
                 visitingLineup = lineup;
             } else if (side == Side.HOME) {
+                logger.info("Lineup added as home");
                 homeLineup = lineup;
             } else {
+                logger.error("Invalid side " + side);
                 throw new IllegalArgumentException("Invalid lineup side");
             }
 
-            if ((visitingLineup != null) && (homeLineup != null)) {
+            if ((! visitingLineup.isEmpty()) && (! homeLineup.isEmpty())) {
                 changeStateToAcceptingStrategies();
             }
             return;
         }
         if (status.getState() != GameStatus.State.ACCEPTING_STRATEGIES) {
+            logger.error("Attempted to add lineup when state is " + status.getState());
             throw new IllegalStateException("Not accepting lineups");
         }
 
@@ -140,6 +149,7 @@ public class Game {
     }
 
     private void handleSubstitutions(Side side, List<Participant> lineup) {
+        logger.info("Handle substitutions");
         // TODO NG20210206 Implement
         // Loop through participants in new lineup
         //     If participant is not at same batting order slot in current lineup
@@ -170,6 +180,7 @@ public class Game {
     }
 
     private void changeStateToAcceptingStrategies() {
+        logger.info("Changing state to accepting strategies");
         status.setState(GameStatus.State.BUSY);
         // Clear strategies
         offensiveStrategy = null;

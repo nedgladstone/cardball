@@ -23,18 +23,25 @@ public class GameStatus {
 
     private int half = 0;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "runs", column = @Column(name = "visitor_runs")),
-            @AttributeOverride(name = "hits", column = @Column(name = "visitor_hits")),
-            @AttributeOverride(name = "errors", column = @Column(name = "visitor_errors")),
-            @AttributeOverride(name = "batter", column = @Column(name = "visitor_batter")),
-            @AttributeOverride(name = "onFirst", column = @Column(name = "visitor_on_first")),
-            @AttributeOverride(name = "onSecond", column = @Column(name = "visitor_on_second")),
-            @AttributeOverride(name = "onThird", column = @Column(name = "visitor_on_third"))
-    })
-    private SideStatus visitorStatus = new SideStatus();
+    private int runs = 0;
 
-    @Embedded
-    private SideStatus homeStatus = new SideStatus();
+    private int hits = 0;
+
+    private int errors = 0;
+
+    private int outs = 0;
+
+    private int balls = 0;
+
+    private int strikes = 0;
+
+    // The following fields are set to the slot number in the batting order
+    // Or 0 if unoccupied
+    private int batter = 0;
+
+    private int onFirst = 0;
+
+    private int onSecond = 0;
+
+    private int onThird = 0;
 }
